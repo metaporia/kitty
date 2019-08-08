@@ -1,6 +1,9 @@
-module Lib
-    ( someFunc
-    ) where
+{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
+module Lib where
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import qualified Text.Trifecta as Tri
+import Control.Applicative
+import Text.Show.Pretty (pPrint, ppShow)
+import Text.RawString.QQ
+
+x = 3
