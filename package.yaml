@@ -33,7 +33,7 @@ library:
     - Lib
 
 executables:
-  kitty:
+  tallyKitty:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
