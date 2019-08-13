@@ -123,7 +123,7 @@ toplevel =
   ((,) <$> (stdIn <|> filePath <|> pure Bare) <*> header')
 
 -- VERSION
-version = "kitty 0.0.1"
+version = "kitty 0.0.2"
 
 main :: IO ()
 main = execParser opts >>= dispatch
