@@ -33,3 +33,12 @@ we can run the following to print a summary of debts:
 ```bash
  cat example.csv |  stack exec tallyKitty -- --stdin --names "a,l,k"
 ```
+
+which produces:
+
+```
+a owes l: $40.0
+k owes l: $40.0
+l owes a: $17.5
+l owes k: $15.0
+```
