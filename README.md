@@ -15,6 +15,16 @@ for payment nor enjoyment/consumption of purchased goods. See the below field
 specification for details. It's likely that proportions will be supported for
 both payment and consumption in the near future.
 
+## Installation
+
+Clone and install with [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/<Paste>):
+
+```bash
+git clone https://github.com/metaporia/kitty && cd kitty && stack install
+```
+
+N.B. this was tested only on Arch Linux.
+
 ## CSV format
 
 Each line has three fields:
