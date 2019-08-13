@@ -1,10 +1,10 @@
 name:                kitty
 version:             0.0.2.0
-github:              "githubuser/kitty"
-license:             BSD3
+git:                 "https://gitlab.com/metaporia/kitty"
+license:             MIT
 author:              "Keane YahnKrafft"
 maintainer:          "kyahnkrafft@me.com"
-copyright:           "2018 Keane Yahn-Krafft"
+copyright:           "2019 Keane Yahn-Krafft"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/kitty#readme>
+description:         Please see the README on GitLab at <https://gitlab.com/metaporia/kitty#readme>
 
 dependencies:
 - base >= 4.7 && < 5
