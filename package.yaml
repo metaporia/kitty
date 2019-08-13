@@ -26,6 +26,9 @@ dependencies:
 - raw-strings-qq
 - parsers
 - optparse-applicative
+- containers
+- matrix
+- boxes
 
 library:
   source-dirs: src
