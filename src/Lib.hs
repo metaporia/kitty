@@ -3,35 +3,33 @@
 {-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Lib where
 
 import Control.Applicative
 import Control.Monad
-import Data.Bifunctor
 import Data.Bool (bool)
-import Data.Foldable (asum)
-import Data.List
 import Data.List (partition)
 import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Matrix hiding ((<|>), trace)
-import Data.Maybe (catMaybes, isJust)
-import Debug.Trace (trace)
+import Data.Maybe (catMaybes)
 import Helpers
 import Text.Parser.Combinators
 import qualified Text.PrettyPrint.Boxes as Box
-import Text.PrettyPrint.Boxes ((/+/), (<+>), hcat)
+import Text.PrettyPrint.Boxes ((/+/), (<+>))
 import Text.RawString.QQ
 import Text.Read (readEither)
-import Text.Show.Pretty (pPrint, ppShow)
-import qualified Text.Trifecta as Tri
-import Text.Trifecta
+import Text.Show.Pretty (ppShow)
+import Text.Trifecta as Tri hiding (err)
 
 --- | PARSE
+parse :: a
 parse = undefined
 
 -- <dollars-spent>,<participated>,<paid>
+exCsv :: String
 exCsv =
   [r|30,kl,k
 120,akl,l
@@ -41,11 +39,11 @@ exCsv =
 
 -- a owes l 40
 -- k owes l 40
+exRow :: String
 exRow = "120,akl,l"
 
 price :: Parser (Either String Float)
-price = do
-  readEither <$> (some digit <?> "price expected to be only digits")
+price = readEither <$> (some digit <?> "price expected to be only digits")
 
 -- | The input list should consist of unique alphanumeric identifiers.
 identifier ::
@@ -54,14 +52,15 @@ identifier ::
 identifier
   -- FIXME assert uniqueness
   --xs <- oneOf (string <$> ids)
- = do
-  choice . fmap (\i -> string i <?> "unexpected identifier: \n" ++ i)
+ = choice . fmap (\i -> string i <?> "unexpected identifier: \n" ++ i)
 
 ourIdentifier :: Parser String
 ourIdentifier = identifier ["a", "k", "l"]
 
+ourIds :: [String]
 ourIds = ["a", "k", "l"]
 
+ourRow :: Parser Row
 ourRow = row ["a", "k", "l"]
 
 data Row = Row
@@ -73,6 +72,7 @@ data Row = Row
 header :: Parser [Id]
 header = some alphaNum `sepBy` (many space *> char ',' <* many space)
 
+parseHeader :: String -> Result [String]
 parseHeader = test header
 
 row :: [String] -> Parser Row
@@ -97,12 +97,11 @@ rows ids = (row ids `sepEndBy` newline) <* eof
 parseRows :: [String] -> String -> Result [Row]
 parseRows ids = test (rows ids)
 
-ourRows = rows ourIds
-
 test :: Parser a -> String -> Result a
 test parser = parseString parser mempty
 
 --- | PROCESS
+process :: a
 process = undefined
 
 -- | Pretty-print rows in tabular format.
@@ -117,7 +116,6 @@ showRows =
        , Box.text (concat participants) /+/ c2
        , Box.text (concat payers) /+/ c3))
     (Box.nullBox, Box.nullBox, Box.nullBox)
-
 
 printRows :: [Row] -> IO ()
 printRows = putStrLn . showRows
@@ -176,28 +174,9 @@ blankDebts ids =
 -- much j owes i, simply negate the result of the more primitive request.
 --
 processRow :: Row -> Debts -> IO [(String, String, Float)]
-processRow Row {..} debts =
-  let numPart = length participants
-      numPay = length payers
-      owed = dollars / (fromIntegral $ numPart)
-      paid = dollars / (fromIntegral $ numPay)
-      spentPer = (flip (,) owed) <$> participants
-      paidPer = (flip (,) paid) <$> payers
-      cancelSelfPayments = do
-        payer <- paidPer
-        spender <- spentPer
-        if fst payer == fst spender
-          then return (fst payer, snd payer - snd spender)
-          else [spender]
-      debtors = participants \\ payers
-      moneyOwed = (paid - owed) / (fromIntegral $ length debtors)
-      updates = [(i, j, moneyOwed) | i <- debtors, j <- payers]
-  in do putStr "cancel: " *> pPrint cancelSelfPayments
-        putStr "spent: " *> pPrint spentPer
-        putStr "paid: " *> pPrint paidPer
-        putStr "updates: " *> pPrint updates
-        return updates
+processRow Row {..} _ = undefined -- see 'generatePaymentEdgesForRow'
 
+exs :: [String]
 exs
   -- l owes k 15
  =
@@ -212,6 +191,7 @@ exs
 
 -- | 
 -- > exRows = parseRows ourIds exCsv
+exRows :: [Row]
 exRows =
   [ Row {dollars = 30.0, participants = ["k", "l"], payers = ["k"]}
   , Row {dollars = 120.0, participants = ["a", "k", "l"], payers = ["l"]}
@@ -253,17 +233,18 @@ type Id = String
 -- | Determine whether a given party has overpaid, underpaid, or has paid the
 -- correct amount.
 assignDebt :: Id -> Row -> Maybe Debtor
-assignDebt id Row {dollars, participants, payers} =
-  let x = 3
+assignDebt id Row {dollars, participants, payers}
       -- determine whether party is a participant, a payer, or both
-      (isParticipant, isPayer) = (id `elem` participants, id `elem` payers)
-      idealPayment = dollars / (fromIntegral $ length participants)
-      actualPayment = dollars / (fromIntegral $ length payers)
+ =
+  let (isParticipant, isPayer) = (id `elem` participants, id `elem` payers)
+      idealPayment = dollars / fromIntegral (length participants)
+      actualPayment = dollars / fromIntegral (length payers)
   in if | isParticipant && isPayer ->
           let diff = actualPayment - idealPayment
           in if | diff == 0 -> Nothing
                 | diff < 0 -> Just $ Owes id diff
-                | diff > 0 -> Just $ Owed id diff
+                | otherwise -- diff > 0 
+                 -> Just $ Owed id diff
         | isParticipant -> Just $ Owes id idealPayment
         | isPayer -> Just $ Owed id $ dollars - actualPayment
         | otherwise -> Nothing
@@ -284,19 +265,17 @@ generatePaymentEdgesForRow :: [Debtor] -> [(Id, Id, Float)]
 generatePaymentEdgesForRow debtors =
   let (owed, owes) = partition isOwed debtors
       -- assertion: the sum of the owed should equal the sum of the owes.
-      totalImbalance = foldr ((+) . getDebt) 0 owed
       go [] _ = []
       go (recipient:t) owers
         -- first pass: left-biased payment
        =
         let amountOwed = getDebt recipient
-            (payments, remainingDebtors, shouldBeZero) =
+            (payments, remainingDebtors, _) =
               foldr
                 (\debtor (payments, remainingDebtors, amountOwed') ->
-                   let amountOwed'' =
+                   let amountOwed''
                          -- trace (show amountOwed' ++ " " ++ show (getDebt debtor)) $
-                         amountOwed' - (getDebt debtor)
-                       remaingDebt = getDebt debtor - amountOwed
+                        = amountOwed' - getDebt debtor
                    in if | amountOwed'' == 0 -- payment removes both payer and recipient
                           ->
                            ( (getId debtor, getId recipient, getDebt debtor) :
@@ -330,18 +309,13 @@ asPayments (Debts indices mat) =
        [ (i, j, ) <$> debt
        | i <- keys
        , j <- keys
-       , let debt = -- filter out zero entries
-               (\d ->
-                  case d of
-                    Nothing -> Nothing
-                    Just d' -> bool (Just d') Nothing (d' == 0)) $
+       , let debt -- filter out zero entries
+              =
+               (\case
+                  Nothing -> Nothing
+                  Just d' -> bool (Just d') Nothing (d' == 0)) $
                join $
                -- convert ids to indices, get cel value
                safeGet <$> Map.lookup i indices <*> Map.lookup j indices <*>
                pure mat
        ]
-
-presentDebts :: Debts -> String
-presentDebts (Debts _ mat) =
-  let x = 3
-  in ""
