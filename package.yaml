@@ -37,7 +37,7 @@ library:
     - -Wincomplete-uni-patterns
     - -Wincomplete-record-updates
     - -Wpartial-fields
-    - -WRedundantConstraints
+    - -WredundantConstraints
     - -WMiss
     - -fno-warn-name-shadowing
   exposed-modules:
