@@ -28,7 +28,8 @@ Given `example.csv` with contents:
 35,al,a
 ```
 
-we can run the following to print a summary of debts:
+we can run the following to print a summary of debts between three parties,
+nicknamed `a`, `l`, and `k`:
 
 ```bash
  cat example.csv |  stack exec tallyKitty -- --stdin --names "a,l,k"
