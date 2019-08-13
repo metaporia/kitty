@@ -1,5 +1,19 @@
 # kitty
 
+Parse a ledger of shared expenses and summarize the resultant individual debts;
+in essence, calculate how much each party owes each other party based on
+entries describing group purchases. 
+
+This was designed to facilitate low-overhead sharing of cash, credit/debit
+cards, etc. when travelling with friends, so that whoever possesses the most
+liquid/available purchasing power can apply it without fear of either losing
+money to the whimsical sense duty of their buddies or having to maintain, e.g.,
+a (more) complex spread-sheet based solution.
+
+As yet there is no means of specifying neither the per-party proportions
+for payment nor enjoyment/consumption of purchased goods. See the below field
+specification for details. It's likely that proportions will be supported for
+both payment and consumption in the near future.
 
 ## CSV format
 
