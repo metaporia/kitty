@@ -42,6 +42,16 @@ exCsv =
 exRow :: String
 exRow = "120,akl,l"
 
+-- TODO  support cents in price.
+price' :: Parser (Either String Float)
+price' =
+  readEither <$>
+  ((++) <$>
+   ((some digit <?> "price expected to be only digits") <*
+    skipOptional (char '.')) <*>
+   (try (some digit) <|> pure ""))
+
+-- TODO
 price :: Parser (Either String Float)
 price = readEither <$> (some digit <?> "price expected to be only digits")
 
