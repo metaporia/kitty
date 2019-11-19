@@ -24,6 +24,9 @@ import Text.Read (readEither)
 import Text.Show.Pretty (ppShow)
 import Text.Trifecta as Tri hiding (err)
 
+-- TODO 
+-- * support floating point debt/payment specification 
+
 --- | PARSE
 parse :: a
 parse = undefined
